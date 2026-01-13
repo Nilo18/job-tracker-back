@@ -20,7 +20,7 @@ const JobApplicationSchema = mongoose.Schema({
     status: {
         required: true,
         type: String,
-        enum: ['pending', 'rejected', 'accepted']
+        enum: ['Pending', 'Accepted', 'Rejected']
     }
 })
 
