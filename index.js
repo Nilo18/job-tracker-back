@@ -1,14 +1,20 @@
 const express = require('express')
 const cors = require('cors')
 const app = express()
+require('dotenv').config()
 const port = 3000
 const apiURL = 'https://findwork.dev/api/jobs/'
 const { LRUCache } = require('lru-cache')
+const mongoose = require('mongoose')
+const mongoURI = process.env.MONGO_URI
+// const JobApplication = require('./models/jobApplication.model.js')
+const jobApplicationRouter = require('./routes/jobApplicationRoute.js')
 
 app.use(cors({
     origin: ['http://localhost:4200']
 }))
 app.use(express.json())
+app.use('/api/jobs', jobApplicationRouter)
 
 const options = {
     max: 50000,
@@ -17,12 +23,8 @@ const options = {
 
 const cache = new LRUCache(options)
 
-// const pendingRequests = new Map()
-
 function findCachedQueryKey(query) {
-    // console.log(`Checking for query ${query} inside the findCachedQueryKey`)
     for (key of cache.keys()) {
-        // console.log("Cache key: ", key)
         if (key.startsWith(query) && key.length >= query.length) {
             return key;
         }
@@ -61,23 +63,9 @@ app.get('/api/search', async (req, res, next) => {
 
         // Make the keyword lowercase and remove unnecessary spaces
         const normalizedKeyword = keyword.toLowerCase().trim().replace(/\s+/g, ' ')
-        console.log("The normalized keyword is:", normalizedKeyword)
-
-        
-        for (const value of cache.keys()) {
-            console.log("All cache keys: ", value);
-        }
-
         const cachedKey = findCachedQueryKey(normalizedKeyword)
-        console.log("The cached key is: ", cachedKey)
         if (cachedKey) {
             const cached = cache.get(cachedKey)
-            // console.log("The cached data is: ", cached)
-            console.log("Cached query detected, using cache and avoiding a request to the API...")
-            // for (const value of cache.keys()) {
-            //     console.log("All cache keys: ", value);
-            // }
-            // const filteredData = cached.filter(job => job.role.includes(normalizedKeyword))
             return res.status(200).json({status: 200, data: cached, cached: true})
         }
 
@@ -96,19 +84,11 @@ app.get('/api/search', async (req, res, next) => {
         if (!results.ok) {
             return res.status(results.status).json({status: results.status, message: "No result found for this search."})
         }
-        // console.log(data)
 
-        // if (!cachedKey) {
-        // console.log("Caching the results...")
         if (queryIsStable(normalizedKeyword)) {
             removeShorterCacheKeys(normalizedKeyword, cache)
             cache.set(normalizedKeyword, data)
         }
-        
-        // }
-
-        // console.log(data)
-
         return res.status(200).json({status: 200, data, cached: false})
     } catch (error) {
         console.log("Couldn't get jobs: ", error)
@@ -119,3 +99,22 @@ app.get('/api/search', async (req, res, next) => {
 app.listen(port, () => {
     console.log(`App listening on port ${port}`)
 })
+
+
+async function connect() {
+    try {
+        await mongoose.connect(mongoURI)   
+        // await JobApplication.create({
+        //     userId: '12fgXGh',
+        //     company_name: 'Google',
+        //     status: 'pending',
+        //     date_sent: new Date()
+        // })
+
+        console.log('Connected to the database.')     
+    } catch (error) {
+        console.log("Couldn't connect to the databse: ", error)
+    }
+}
+
+connect()
