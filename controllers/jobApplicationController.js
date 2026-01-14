@@ -41,4 +41,22 @@ async function addAppliedJob(req, res, next) {
     }
 }
 
-module.exports = { getAppliedJobs, addAppliedJob }
+async function deleteJobApplication(req, res, next) {
+    try {
+        const { id } = req.params
+
+        if (!id) {
+            return res.status(401).json({status: 401, message: 'Please provide the id of the job application.'})
+        }
+
+        const deletedApplication = await JobApplication.findByIdAndDelete(id)
+        console.log(deletedApplication)
+
+        return res.status(200).json({status: 200, jobApp: deletedApplication})
+    } catch (error) {
+        console.log("Couldn't add the job application: ", error)
+        return res.status(500).json({status: 500, message: error.message})        
+    }
+}
+
+module.exports = { getAppliedJobs, addAppliedJob, deleteJobApplication }
