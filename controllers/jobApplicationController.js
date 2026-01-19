@@ -4,7 +4,26 @@ async function getAppliedJobs(req, res, next) {
     try {
         const jobApplications = await JobApplication.find({})
         // console.log(jobApplications)
-        return res.status(200).json({status: 200, jobs: jobApplications})
+        let acceptedCount = 0
+        let pendingCount = 0
+        let rejectedCount = 0
+        jobApplications.forEach(job => {
+            if (job.status === 'Accepted') {
+                acceptedCount++
+            } else if (job.status === 'Pending') {
+                pendingCount++
+            } else if (job.status === 'Rejected') {
+                rejectedCount++
+            }
+        })
+
+        return res.status(200).json({
+            status: 200,
+            jobs: jobApplications, 
+            accepted: acceptedCount,
+            rejected: rejectedCount, 
+            pending: pendingCount
+        })
     } catch (error) {
         console.log("Couldn't get job applications: ", error)
         return res.status(500).json({status: 500, message: error.message})
