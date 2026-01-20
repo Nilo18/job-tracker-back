@@ -3,19 +3,10 @@ const JobApplication = require('../models/jobApplication.model.js')
 async function getAppliedJobs(req, res, next) {
     try {
         const jobApplications = await JobApplication.find({})
-        // console.log(jobApplications)
-        let acceptedCount = 0
-        let pendingCount = 0
-        let rejectedCount = 0
-        jobApplications.forEach(job => {
-            if (job.status === 'Accepted') {
-                acceptedCount++
-            } else if (job.status === 'Pending') {
-                pendingCount++
-            } else if (job.status === 'Rejected') {
-                rejectedCount++
-            }
-        })
+        
+        const acceptedCount = jobApplications.filter(job => job.status === 'Accepted').length
+        const rejectedCount = jobApplications.filter(job => job.status === 'Rejected').length
+        const pendingCount = jobApplications.filter(job => job.status === 'Pending').length
 
         return res.status(200).json({
             status: 200,
