@@ -58,6 +58,7 @@ async function login(req, res, next) {
         }
 
         const token = AuthService.signJWT(user._id, user.email, user.name, user.profilePicture)
+        console.log("Request succeeded!")
         return res.status(200).json({status: 200, token: token})
     } catch (error) {
         console.log("Couldn't log in: ", error)

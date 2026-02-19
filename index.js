@@ -19,8 +19,9 @@ app.use('/api/jobs', jobApplicationRouter)
 
 app.listen(port, () => {
     console.log(`App listening on port ${port}`)
+    // console.log(process.env.REDIRECT_URI)
+    // console.log(process.env.CLIENT_SECRET)
 })
-
 
 async function connect() {
     try {

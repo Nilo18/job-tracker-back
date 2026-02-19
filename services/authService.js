@@ -1,4 +1,4 @@
-// require('dotenv').config()
+require('dotenv').config()
 const { OAuth2Client} = require('google-auth-library')
 const jwt = require('jsonwebtoken')
 
@@ -6,18 +6,25 @@ class AuthService {
     static #clientId = process.env.CLIENT_ID
     static #clientSecret = process.env.CLIENT_SECRET
     static #redirectUri = process.env.REDIRECT_URI
-    static #client = new OAuth2Client(this.#clientId, this.#clientSecret, this.#redirectUri)
+    static #client = new OAuth2Client(this.#clientId, this.#clientSecret, 'http://localhost:4200/callback')
     static #ticket
 
     static async verifyGoogleWithCode(code, code_verifier) {
         try {
             console.log("code is: ", code, "\n\n\n")
             console.log("code_verifier is: ", code_verifier, "\n\n\n")
+            console.log("The object that is being passed to getToken: ", {
+                code,
+                client_id: this.#clientId,
+                client_secret: this.#clientSecret,
+                redirect_uri: 'http://localhost:4200/callback',
+                codeVerifier: code_verifier
+            })
             const { tokens } = await this.#client.getToken({
                 code,
                 client_id: this.#clientId,
                 client_secret: this.#clientSecret,
-                redirect_uri: this.#redirectUri,
+                redirect_uri: 'http://localhost:4200/callback',
                 codeVerifier: code_verifier
             })
             this.#client.setCredentials(tokens)
