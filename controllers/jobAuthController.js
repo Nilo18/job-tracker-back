@@ -27,16 +27,38 @@ async function login(req, res, next) {
         }
 
         console.log("userInfo is: ", userInfo)
-        const user = await User.findOne({email: userInfo.email})
-        const token = AuthService.signJWT(userInfo.email, userInfo.name, userInfo.picture)
-        // console.log("The custom token is: ", token)
+        userInfo.provider = provider.trim().toLowerCase()
+        let user = await User.findOne({[`providers.${userInfo.provider}.id`]: userInfo.sub})
+
+        // Email as a fallback
         if (!user) {
-            // Add user to the database and then send the token
-            return res.status(401).json({ status: 401, message: 'User not registered' })
+            user = await User.findOne({email: userInfo.email})
         }
 
-        return res.status(200).json({status: 200, token: token})
+        // If the user was not found by email as well, add them, otherwise attach the new provider
+        console.log('userInfo.provider is: ', userInfo.provider)
+        console.log('userInfo.providers is: ', userInfo.providers)
+        if (!user) {
+            // Add user to the database and then send the token
+            const newUser = await User.create({
+                email: userInfo.email, 
+                name: userInfo.name, 
+                profilePicture: userInfo.picture,
+                emailVerified: userInfo.emailVerified,
+                providers: {
+                    google: {id: userInfo.sub}
+                }
+            })
+            console.log("Created the new user: ", newUser)
+            user = newUser;
+            // return res.status(401).json({ status: 401, message: 'User not registered' })
+        } else if (!user.providers[userInfo.provider]) {
+            user.providers[userInfo.provider] = {id: userInfo.sub}
+            await user.save()
+        }
 
+        const token = AuthService.signJWT(user._id, user.email, user.name, user.profilePicture)
+        return res.status(200).json({status: 200, token: token})
     } catch (error) {
         console.log("Couldn't log in: ", error)
         return res.status(500).json({status: 500, message: error.message})

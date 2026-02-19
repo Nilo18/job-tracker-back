@@ -44,9 +44,9 @@ class AuthService {
         }
     }
 
-    static signJWT(email, name, profilePicture) {
+    static signJWT(_id, email, name, profilePicture) {
         try {
-            return jwt.sign({email, name, profilePicture}, process.env.JWT_SECRET)
+            return jwt.sign({_id, email, name, profilePicture}, process.env.JWT_SECRET)
         } catch (error) {
             console.log("JWT creation failed: ", error)
         }

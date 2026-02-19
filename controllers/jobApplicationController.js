@@ -2,7 +2,13 @@ const JobApplication = require('../models/jobApplication.model.js')
 
 async function getAppliedJobs(req, res, next) {
     try {
-        const jobApplications = await JobApplication.find({})
+        const { userId } = req.params
+
+        if (!userId) {
+            return res.status(400).json({status: 400, message: "Please provide a user id."})
+        }
+
+        const jobApplications = await JobApplication.find({userId: userId})
         
         const acceptedCount = jobApplications.filter(job => job.status === 'Accepted').length
         const rejectedCount = jobApplications.filter(job => job.status === 'Rejected').length
@@ -23,7 +29,11 @@ async function getAppliedJobs(req, res, next) {
 
 async function addAppliedJob(req, res, next) {
     try {
-        const { company_name, date_sent, status } = req.body
+        const { userId, company_name, date_sent, status } = req.body
+
+        if (!userId) {
+            return res.status(400).json({status: 400, message: 'Please provide a userId.'})
+        }
 
         if (!company_name) {
             return res.status(400).json({status: 400, message: 'Please provide company name.'})
@@ -38,11 +48,12 @@ async function addAppliedJob(req, res, next) {
         }
 
         const newJobApp = await JobApplication.create({
-            userId: '12fgXGh',
+            userId: userId,
             company_name: company_name,
             date_sent: date_sent,
             status: status
         })
+        console.log(newJobApp)
 
         return res.status(200).json({status: 200, jobApp: newJobApp})
     } catch (error) {
@@ -54,7 +65,11 @@ async function addAppliedJob(req, res, next) {
 const allowedStatuses = ['Pending', 'Accepted', 'Rejected']
 async function editJobApplication(req, res, next) {
     try {
-        const { id, field, newValue } = req.body
+        const { userId, id, field, newValue } = req.body
+
+        if (!userId) {
+            return res.status(400).json({status: 400, message: "Please provide a user id."})
+        }
 
         if (!id) {
             return res.status(400).json({status: 400, message: 'Please provide a job application id.'})
@@ -73,8 +88,8 @@ async function editJobApplication(req, res, next) {
         }
 
         console.log(`Changing '${field}' with '${newValue}'...`)
-        const updatedDocument = await JobApplication.findByIdAndUpdate(
-            id,
+        const updatedDocument = await JobApplication.findOneAndUpdate(
+            {_id: id, userId: userId},
             {$set: {[field]: newValue}},
             {new: true},
             {runValidators: true}
@@ -93,13 +108,17 @@ async function editJobApplication(req, res, next) {
 
 async function deleteJobApplication(req, res, next) {
     try {
-        const { id } = req.params
+        const { userId, id } = req.body
+
+        if (!userId) {
+            return res.status(400).json({status: 400, message: "Please provide a user id."})
+        }
 
         if (!id) {
             return res.status(400).json({status: 400, message: 'Please provide the id of the job application.'})
         }
 
-        const deletedApplication = await JobApplication.findByIdAndDelete(id)
+        const deletedApplication = await JobApplication.findOneAndDelete({_id: id, userId: userId})
         console.log(deletedApplication)
 
         return res.status(200).json({status: 200, jobApp: deletedApplication})
