@@ -65,35 +65,22 @@ async function addAppliedJob(req, res, next) {
 const allowedStatuses = ['Pending', 'Accepted', 'Rejected']
 async function editJobApplication(req, res, next) {
     try {
-        const { userId, id, field, newValue } = req.body
-
-        if (!userId) {
-            return res.status(400).json({status: 400, message: "Please provide a user id."})
-        }
+        const {id, newObject } = req.body
 
         if (!id) {
             return res.status(400).json({status: 400, message: 'Please provide a job application id.'})
         }
 
-        if (!field) {
-            return res.status(400).json({status: 400, message: 'Please provide a field which you want to edit.'})
+        if (!newObject) {
+            return res.status(400).json({status: 400, message: 'Please provide a valid job application'})
         }
 
-        if (!newValue) {
-            return res.status(400).json({status: 400, message: 'Please provide the new value for the field.'})
-        }
-
-        if (field.trim() === 'status' && !allowedStatuses.includes(newValue)) {
-            return res.status(400).json({status: 400, message: 'Please provide a valid status value.'})
-        }
-
-        console.log(`Changing '${field}' with '${newValue}'...`)
+        // console.log(`Changing '${field}' with '${newValue}'...`)
         const updatedDocument = await JobApplication.findOneAndUpdate(
-            {_id: id, userId: userId},
-            {$set: {[field]: newValue}},
-            {new: true},
-            {runValidators: true}
-        )
+            { _id: id, userId: newObject.userId },
+            newObject,
+            { new: true, runValidators: true }
+        );
 
         if (!updatedDocument) {
             return res.status(404).json({status: 404, message: "A job application with the given id couldn't be found"})
