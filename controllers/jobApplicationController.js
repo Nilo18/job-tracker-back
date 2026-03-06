@@ -29,7 +29,7 @@ async function getAppliedJobs(req, res, next) {
 
 async function addAppliedJob(req, res, next) {
     try {
-        const { userId, company_name, date_sent, status } = req.body
+        const { userId, company_name, position, date_sent, location, min_salary, max_salary, status } = req.body
 
         if (!userId) {
             return res.status(400).json({status: 400, message: 'Please provide a userId.'})
@@ -39,8 +39,16 @@ async function addAppliedJob(req, res, next) {
             return res.status(400).json({status: 400, message: 'Please provide company name.'})
         }
 
+        if (!position) {
+            return res.status(400).json({status: 400, message: 'Please provide position.'})
+        }
+
         if (!date_sent) {
             return res.status(400).json({status: 400, message: 'Please provide the date on which the application was sent.'})
+        }
+
+        if (!position) {
+            return res.status(400).json({status: 400, message: 'Please provide location.'})
         }
 
         if (!status) {
@@ -50,7 +58,11 @@ async function addAppliedJob(req, res, next) {
         const newJobApp = await JobApplication.create({
             userId: userId,
             company_name: company_name,
+            position: position,
             date_sent: date_sent,
+            location: location,
+            min_salary: min_salary || null,
+            max_salary: max_salary || null,
             status: status
         })
         console.log(newJobApp)

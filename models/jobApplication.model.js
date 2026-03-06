@@ -11,10 +11,28 @@ const JobApplicationSchema = mongoose.Schema({
         type: String
     },
 
+    position: {
+        required: true,
+        type: String
+    },
+
     date_sent: {
         required: true,
         type: Date,
         default: Date.now,
+    },
+
+    location: {
+        required: true,
+        type: String
+    },
+
+    min_salary: {
+        type: Number
+    },
+
+    max_salary: {
+        type: Number
     },
 
     status: {

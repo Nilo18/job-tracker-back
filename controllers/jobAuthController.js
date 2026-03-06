@@ -18,10 +18,42 @@ async function login(req, res, next) {
         }
 
         let userInfo
-        if (provider.trim().toLowerCase() === 'google') {
+        const stdProvider = provider.trim().toLowerCase()
+        if (stdProvider === 'google') {
             const payload = await AuthService.verifyGoogleWithCode(code, code_verifier)
             console.log('Received the payload from the googleIdToken checker method: ', payload)
             userInfo = payload
+        } else if (stdProvider === 'facebook') {
+            const tokenRes = await fetch(`https://graph.facebook.com/v18.0/oauth/access_token?` +
+                `client_id=876631571861830` +
+                `&redirect_uri=http://localhost:4200/callback` +
+                `&client_secret=${process.env.FACEBOOK_APP_SECRET}` +
+                `&code=${code}`
+            )
+
+            const tokenData = tokenRes.json()
+
+            if (!tokenData) {
+                return res.status(500).json({status: 500, message: "Failed to get token data from Facebook."})
+            }
+
+            const profileData = await fetch(
+                `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${tokenData.access_token}`
+            )
+
+            if (!profileData) {
+                return res.status(500).json({status: 500, message: "Failed to get user profile data from Facebook."})
+            }
+
+            const profile = profileData.json()
+
+            userInfo = {
+                sub: profile.id,
+                email: profile.email,
+                name: profile.name,
+                picture: profile.picture?.data?.url,
+                emailVerified: true
+            };
         } else {
             return res.status(400).json({status: 400, message: "Unsupported provider."})
         }
@@ -63,6 +95,14 @@ async function login(req, res, next) {
     } catch (error) {
         console.log("Couldn't log in: ", error)
         return res.status(500).json({status: 500, message: error.message})
+    }
+}
+
+async function loginWithFacebook() {
+    try {
+        
+    } catch (error) {
+        console.log("Couldn't log in with facebook: ", err)
     }
 }
 

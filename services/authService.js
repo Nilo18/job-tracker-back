@@ -51,6 +51,10 @@ class AuthService {
         }
     }
 
+    verifyFacebook() {
+        
+    }
+
     static signJWT(_id, email, name, profilePicture) {
         try {
             return jwt.sign({_id, email, name, profilePicture}, process.env.JWT_SECRET)
