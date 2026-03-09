@@ -1,15 +1,33 @@
 const JobApplication = require('../models/jobApplication.model.js')
 
+const allowedStatuses = ['All status', 'Pending', 'Accepted', 'Rejected']
 async function getAppliedJobs(req, res, next) {
     try {
         const { userId } = req.params
-
+        const { keyword, filter } = req.query
+        console.log("Received keyword=", keyword)
+        console.log("Received filter=", filter)
+        
         if (!userId) {
             return res.status(400).json({status: 400, message: "Please provide a user id."})
         }
 
-        const jobApplications = await JobApplication.find({userId: userId})
-        
+        const query = { userId }
+
+        if (filter && allowedStatuses.includes(filter)) {
+            query.status = filter
+        }
+
+        if (keyword) {
+            query.$or = [
+                { company_name: { $regex: keyword, $options: "i" } },
+                { position: { $regex: keyword, $options: "i" } },
+                { location: { $regex: keyword, $options: "i" } }
+            ]
+        }
+
+        const jobApplications = await JobApplication.find(query)
+
         const acceptedCount = jobApplications.filter(job => job.status === 'Accepted').length
         const rejectedCount = jobApplications.filter(job => job.status === 'Rejected').length
         const pendingCount = jobApplications.filter(job => job.status === 'Pending').length
@@ -74,7 +92,6 @@ async function addAppliedJob(req, res, next) {
     }
 }
 
-const allowedStatuses = ['Pending', 'Accepted', 'Rejected']
 async function editJobApplication(req, res, next) {
     try {
         const {id, newObject } = req.body
