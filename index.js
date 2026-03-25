@@ -27,6 +27,14 @@ app.use('/api/search', jobSearchRouter)
 app.use('/api/auth', jobAuthRouter)
 app.use('/api/jobs', jobApplicationRouter)
 
+app.get('/', (req, res, next) => {
+  try {
+    return res.json({status: 200, message: 'The server is running.'})
+  } catch (error) {
+    return res.status(error.status).json({status: error.status, message: 'Failed to connect to the server'})
+  }
+})
+
 app.get('/ping', (req, res, next) => {
   try {
     return res.json({status: 200, message: 'Pinged successfully.'})
