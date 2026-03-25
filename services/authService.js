@@ -11,15 +11,6 @@ class AuthService {
 
     static async verifyGoogleWithCode(code, code_verifier) {
         try {
-            console.log("code is: ", code, "\n\n\n")
-            console.log("code_verifier is: ", code_verifier, "\n\n\n")
-            console.log("The object that is being passed to getToken: ", {
-                code,
-                client_id: this.#clientId,
-                client_secret: this.#clientSecret,
-                redirect_uri: 'http://localhost:4200/callback',
-                codeVerifier: code_verifier
-            })
             const { tokens } = await this.#client.getToken({
                 code,
                 client_id: this.#clientId,
@@ -28,11 +19,8 @@ class AuthService {
                 codeVerifier: code_verifier
             })
             this.#client.setCredentials(tokens)
-            console.log("Received tokens: ", tokens)
-            console.log("The id_token is: ", tokens.id_token)
 
             if (!tokens.id_token) {
-                console.log('No ID token returned from Google');
                 throw new Error("ID token missing.")
             }
 
@@ -43,11 +31,10 @@ class AuthService {
 
             const payload = this.#ticket.getPayload()
 
-            console.log("The received payload is: ", payload)
-
             return payload
         } catch (error) {
-            console.log("Failed to verify code: ", error)
+            console.error("Google verification error:", error)
+            throw error
         }
     }
 

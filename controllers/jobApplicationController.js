@@ -5,8 +5,6 @@ async function getAppliedJobs(req, res, next) {
     try {
         const { userId } = req.params
         const { keyword, filter } = req.query
-        console.log("Received keyword=", keyword)
-        console.log("Received filter=", filter)
         
         if (!userId) {
             return res.status(400).json({status: 400, message: "Please provide a user id."})
@@ -40,7 +38,6 @@ async function getAppliedJobs(req, res, next) {
             pending: pendingCount
         })
     } catch (error) {
-        console.log("Couldn't get job applications: ", error)
         return res.status(500).json({status: 500, message: error.message})
     }
 }
@@ -83,11 +80,9 @@ async function addAppliedJob(req, res, next) {
             max_salary: max_salary || null,
             status: status
         })
-        console.log(newJobApp)
 
         return res.status(200).json({status: 200, jobApp: newJobApp})
     } catch (error) {
-        console.log("Couldn't add the job application: ", error)
         return res.status(500).json({status: 500, message: error.message})
     }
 }
@@ -104,7 +99,6 @@ async function editJobApplication(req, res, next) {
             return res.status(400).json({status: 400, message: 'Please provide a valid job application'})
         }
 
-        // console.log(`Changing '${field}' with '${newValue}'...`)
         const updatedDocument = await JobApplication.findOneAndUpdate(
             { _id: id, userId: newObject.userId },
             newObject,
@@ -117,7 +111,6 @@ async function editJobApplication(req, res, next) {
 
         return res.status(200).json({status: 200, jobApp: updatedDocument})
     } catch (error) {
-        console.log("Couldn't edit job application: ", error)
         return res.status(500).json({status: 500, message: error.message})
     }
 }
@@ -135,11 +128,9 @@ async function deleteJobApplication(req, res, next) {
         }
 
         const deletedApplication = await JobApplication.findOneAndDelete({_id: id, userId: userId})
-        console.log(deletedApplication)
 
         return res.status(200).json({status: 200, jobApp: deletedApplication})
     } catch (error) {
-        console.log("Couldn't add the job application: ", error)
         return res.status(500).json({status: 500, message: error.message})        
     }
 }

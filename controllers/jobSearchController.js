@@ -17,12 +17,10 @@ async function search(req, res, next) {
             return res.status(400).json({status: 400, message: "Please provide a keyword."})
         }
 
-        // Enforce at least 3 characters for keyword to improve storing queries in the cache
         if (keyword.length < 3) {
             return res.status(200).json({status: 200, data: [], cached: false})
         }
 
-        // Make the keyword lowercase and remove unnecessary spaces
         const normalizedKeyword = keyword.toLowerCase().trim().replace(/\s+/g, ' ')
         const cachedKey = findCachedQueryKey(cache, normalizedKeyword)
         if (cachedKey) {
@@ -39,7 +37,8 @@ async function search(req, res, next) {
         const data = await results.json().then(json => json.results.map(job => ({
             id: job.id,
             role: job.role,
-            company_name: job.company_name
+            company_name: job.company_name,
+            url: job.url
         })))
 
         if (!results.ok) {
@@ -52,7 +51,6 @@ async function search(req, res, next) {
         }
         return res.status(200).json({status: 200, data, cached: false})
     } catch (error) {
-        console.log("Couldn't get jobs: ", error)
         return res.status(500).json({status: 500, message: error.message})
     }
 }

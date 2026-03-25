@@ -8,14 +8,11 @@ const UserSchema = mongoose.Schema({
 
   providers: {
     google: {
-      id: { type: String, unique: true, sparse: true },
-      // optional extra data from Google
+      id: { type: String, unique: true, sparse: true }
     },
     facebook: {
-      id: { type: String, unique: true, sparse: true },
-      // optional extra data from Facebook
-    },
-    // Add other providers similarly
+      id: { type: String, unique: true, sparse: true }
+    }
   },
 }, { timestamps: true });
 
