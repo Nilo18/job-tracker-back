@@ -15,7 +15,7 @@ class AuthService {
                 code,
                 client_id: this.#clientId,
                 client_secret: this.#clientSecret,
-                redirect_uri: 'http://localhost:4200/callback',
+                redirect_uri: process.env.REDIRECT_URI,
                 codeVerifier: code_verifier
             })
             this.#client.setCredentials(tokens)
