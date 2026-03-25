@@ -12,7 +12,7 @@ const session = require('express-session')
 const { Strategy } = require('passport-facebook')
 
 app.use(cors({
-    origin: ['http://localhost:4200', 'https://job-tracker-sage-mu-39.vercel.app/']
+    origin: ['http://localhost:4200', 'https://job-tracker-sage-mu-39.vercel.app']
 }))
 app.use(session({
   secret: process.env.SESSION_SECRET,
