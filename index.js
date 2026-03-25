@@ -12,7 +12,7 @@ const session = require('express-session')
 const { Strategy } = require('passport-facebook')
 
 app.use(cors({
-    origin: ['http://localhost:4200']
+    origin: ['http://localhost:4200', 'https://job-tracker-sage-mu-39.vercel.app/']
 }))
 app.use(session({
   secret: process.env.SESSION_SECRET,
@@ -22,38 +22,18 @@ app.use(session({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-app.post("/api/generate", async (req, res) => {
-  const { prompt } = req.body;
-
-  if (!prompt) {
-    return res.status(400).send("Please provide a prompt.")
-  }
-
-  try {
-    const response = await fetch("http://localhost:8000/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt })
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      return res.status(response.status).send(errText);
-    }
-
-    const data = await response.json();
-    res.json({ result: data.result });
-  } catch (err) {
-    res.status(500).send("Server error");
-  }
-});
-
 app.use(express.json())
 app.use('/api/search', jobSearchRouter)
 app.use('/api/auth', jobAuthRouter)
 app.use('/api/jobs', jobApplicationRouter)
 
+app.get('/ping', (req, res, next) => {
+  try {
+    return res.json({status: 200, message: 'Pinged successfully.'})
+  } catch (error) {
+    return res.status(error.status).json({status: error.status, message: 'Failed to ping the server'})
+  }
+})
 
 app.listen(port, () => {
     console.log(`App listening on port ${port}`)
